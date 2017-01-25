@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">CalculaIndiceMasa3</string>
+    <string name="IngresaMasa" />
+    <string name="ingresa_tu_altura">Ingresa tu altura</string>
+    <string name="ingresa_tu_peso_en_kg">ingresa tu peso en kg</string>
+    <string name="button">Button</string>
+    <string name="textview">Calcula el indice de masa</string>
+    <string name="error_campo_vacio">Campo altura o peso estan vacios</string>
+    <string name="errorNoNumerico">valores no numericos</string>
+</resources>
