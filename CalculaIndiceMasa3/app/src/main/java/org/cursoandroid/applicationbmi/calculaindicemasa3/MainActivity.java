@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+
         if(mensajeResultado == null) {
             String regexEntero = "\\d{1,3}";
             if (!peso.matches(regexEntero) || !altura.matches(regexEntero)) {
