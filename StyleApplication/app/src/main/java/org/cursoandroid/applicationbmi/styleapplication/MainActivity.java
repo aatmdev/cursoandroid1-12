@@ -1,12 +1,16 @@
 package org.cursoandroid.applicationbmi.styleapplication;
 
 import android.app.AlertDialog;
+
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -25,20 +29,22 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import org.cursoandroid.applicationbmi.styleapplication.fragments.ItemFragmentFragment;
+import org.cursoandroid.applicationbmi.styleapplication.models.PointDTO;
 import org.cursoandroid.applicationbmi.styleapplication.utilities.MyPreferences;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, ItemFragmentFragment.OnListFragmentInteractionListener {
 
+    public static final String TAG = MainActivity.class.getSimpleName();
     private ProgressDialog progressDialog;
     private MyPreferences pref;
-    private ConnectionDetector connectionDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,8 +76,15 @@ public class MainActivity extends AppCompatActivity
 
         //Inicio el preference
         pref = new MyPreferences(this);
-        //inico el detector de conexión a internet
-        connectionDetector = new ConnectionDetector(this);
+
+        replaceFagment(new ItemFragmentFragment());
+    }
+
+    private void replaceFagment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.container, fragment);
+        fragmentTransaction.commit();
     }
 
     @Override
@@ -91,56 +104,8 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_update) {
-            if(connectionDetector.isConnectingToInternet()){
-                Toast.makeText(this, "Si hay conexión", Toast.LENGTH_SHORT).show();
-                getData();
-            }
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void getData() {
-        RequestQueue queue = Volley.newRequestQueue(this);
 
 
-
-        String url = "http://vesta.sersoluciones.com:9080/points/?format=json";
-
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            JSONArray jsonArray = response.getJSONArray("features");
-                            Log.d("my data", jsonArray.toString());
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-
-                    }
-                });
-
-        queue.add(jsObjRequest);
-
-    }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -190,4 +155,8 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    @Override
+    public void onListFragmentInteraction(PointDTO item) {
+
+    }
 }
