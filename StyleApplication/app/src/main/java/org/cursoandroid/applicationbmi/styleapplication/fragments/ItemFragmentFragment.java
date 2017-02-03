@@ -1,16 +1,19 @@
 package org.cursoandroid.applicationbmi.styleapplication.fragments;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -24,6 +27,7 @@ import com.google.gson.reflect.TypeToken;
 
 import org.cursoandroid.applicationbmi.styleapplication.ConnectionDetector;
 import org.cursoandroid.applicationbmi.styleapplication.R;
+import org.cursoandroid.applicationbmi.styleapplication.databases.DBAdapter;
 import org.cursoandroid.applicationbmi.styleapplication.models.PointDTO;
 import org.json.JSONArray;
 
@@ -48,7 +52,7 @@ public class ItemFragmentFragment extends Fragment {
     private ConnectionDetector connectionDetector;
     private MyItemFragmentRecyclerViewAdapter mAdapter;
     private RecyclerView recyclerView;
-
+    private DBAdapter dbAdapter ;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -77,6 +81,8 @@ public class ItemFragmentFragment extends Fragment {
 
         //inicio el detector de conexión a internet
         connectionDetector = new ConnectionDetector(getActivity());
+        //inicio el adaptator a la bd
+        dbAdapter = new DBAdapter(getContext());
     }
 
     @Override
@@ -95,9 +101,12 @@ public class ItemFragmentFragment extends Fragment {
             }
             mAdapter = new MyItemFragmentRecyclerViewAdapter(dataSet, mListener);
             recyclerView.setAdapter(mAdapter);
+            //se registra (muestra) el context menu en el reciclerview
+            registerForContextMenu(recyclerView);
         }
         return view;
     }
+
 
 
     @Override
@@ -126,14 +135,34 @@ public class ItemFragmentFragment extends Fragment {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_update) {
+            Cursor cursor = dbAdapter.getAll();
             if(connectionDetector.isConnectingToInternet()){
                 Toast.makeText(getActivity(), "Si hay conexión", Toast.LENGTH_SHORT).show();
-                getData();
+                if(cursor.getCount() > 0){
+                  updateMyList(cursor);
+                }else {
+                    getData();
+                }
+            }else{
+                if(cursor.getCount() > 0){
+                    updateMyList(cursor);
+                }
             }
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateMyList(Cursor cursor) {
+        while(cursor.moveToNext()){
+            dataSet.add(new PointDTO(cursor.getInt(1),
+                                    cursor.getString(2),
+                                    cursor.getString(3)));
+        }
+        mAdapter = new MyItemFragmentRecyclerViewAdapter(dataSet, mListener);
+        recyclerView.setAdapter(mAdapter);
+        recyclerView.invalidate();
     }
 
     private void getData() {
@@ -151,6 +180,8 @@ public class ItemFragmentFragment extends Fragment {
                         Log.i(TAG, "respuesta bien");
                         Gson gson = new Gson();
                         dataSet = gson.fromJson(response.toString(), new TypeToken<List<PointDTO>>(){}.getType());
+                        //Guardo en la bd
+                        dbAdapter.insert(dataSet);
 
                         mAdapter = new MyItemFragmentRecyclerViewAdapter(dataSet, mListener);
                         recyclerView.setAdapter(mAdapter);
@@ -169,6 +200,11 @@ public class ItemFragmentFragment extends Fragment {
 
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        dbAdapter.close();
+    }
 
     /**
      * This interface must be implemented by activities that contain this

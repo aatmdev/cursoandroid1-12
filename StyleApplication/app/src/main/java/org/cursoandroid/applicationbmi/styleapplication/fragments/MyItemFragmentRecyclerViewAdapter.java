@@ -1,9 +1,12 @@
 package org.cursoandroid.applicationbmi.styleapplication.fragments;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.TextView;
 
 import org.cursoandroid.applicationbmi.styleapplication.R;
@@ -56,7 +59,7 @@ public class MyItemFragmentRecyclerViewAdapter extends RecyclerView.Adapter<MyIt
         return mValues.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener{
         public final View mView;
         public final TextView mIdView;
         public final TextView mContentView;
@@ -67,11 +70,23 @@ public class MyItemFragmentRecyclerViewAdapter extends RecyclerView.Adapter<MyIt
             mView = view;
             mIdView = (TextView) view.findViewById(R.id.id);
             mContentView = (TextView) view.findViewById(R.id.content);
+
+            view.setOnCreateContextMenuListener(this);
         }
 
         @Override
         public String toString() {
             return super.toString() + " '" + mContentView.getText() + "'";
+        }
+
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+            menu.setHeaderTitle("Opciones");
+
+            menu.add(1, v.getId(), 0 , "Detalles");
+            menu.add(2, v.getId(), 1 , "Editar");
+            menu.add(3, v.getId(), 2 , "Eliminar");
+
         }
     }
 }

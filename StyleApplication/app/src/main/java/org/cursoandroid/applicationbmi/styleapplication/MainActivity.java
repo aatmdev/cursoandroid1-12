@@ -2,8 +2,13 @@ package org.cursoandroid.applicationbmi.styleapplication;
 
 import android.app.AlertDialog;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
@@ -45,6 +50,7 @@ public class MainActivity extends AppCompatActivity
     public static final String TAG = MainActivity.class.getSimpleName();
     private ProgressDialog progressDialog;
     private MyPreferences pref;
+    private int pk;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,6 +163,38 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onListFragmentInteraction(PointDTO item) {
+        pk = item.getId();
+        Log.e(TAG, "_pk " + pk);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        switch (item.getGroupId()){
+            case 1:
+                sendNotification();
+                startActivity(new Intent(MainActivity.this, DetailActivity.class));
+                break;
+            case 2:
+                break;
+
+            case 3:
+                break;
+
+        }
+        return super.onContextItemSelected(item);
+    }
+
+    private void sendNotification() {
+        Intent intent = new Intent(this, DetailActivity.class);
+        Notification notificacion = new Notification.Builder(this)
+                                .setSmallIcon(R.drawable.ic_menu_share)
+                                .setWhen(System.currentTimeMillis())
+                                .setContentText("Notificacion")
+                                .setContentTitle("Revice por favor al notificación")
+                                .setContentIntent(PendingIntent.getActivity(this, 0, intent, 0))
+                                .setPriority(Notification.PRIORITY_MAX).build();
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(1, notificacion);
 
     }
 }
